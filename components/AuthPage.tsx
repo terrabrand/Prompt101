@@ -1,11 +1,12 @@
+
 import React, { useState } from 'react';
 import { UserRole } from '../types';
-import { ShieldCheck, User as UserIcon, ArrowRight, Mail, Lock, UserPlus, Terminal, Cpu } from 'lucide-react';
+import { ShieldCheck, User as UserIcon, ArrowRight, Mail, Lock, UserPlus, Terminal, Cpu, ImageIcon } from 'lucide-react';
 
 interface AuthPageProps {
   onDemoLogin: (role: UserRole) => void;
   onFormLogin: (email: string) => void;
-  onRegister: (name: string, email: string) => void;
+  onRegister: (name: string, email: string, avatar?: string) => void;
   onNavigateToMarket: () => void;
 }
 
@@ -14,11 +15,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onDemoLogin, onFormLogin, on
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [avatar, setAvatar] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isRegister) {
-      if (name && email) onRegister(name, email);
+      if (name && email) onRegister(name, email, avatar);
     } else {
       if (email) onFormLogin(email);
     }
@@ -68,20 +70,35 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onDemoLogin, onFormLogin, on
 
           <form className="space-y-5 mb-8" onSubmit={handleSubmit}>
             {isRegister && (
-              <div>
-                <label className="block text-[10px] font-bold text-zinc-500 mb-1 font-mono uppercase tracking-wider">Designation / Name</label>
-                <div className="relative group">
-                  <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-neon transition-colors" size={16} />
-                  <input 
-                    type="text" 
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-black border border-zinc-800 rounded-sm focus:border-neon focus:ring-1 focus:ring-neon outline-none transition-all text-white font-mono text-sm placeholder-zinc-800" 
-                    placeholder="ENTER_NAME" 
-                    required={isRegister}
-                  />
+              <>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 mb-1 font-mono uppercase tracking-wider">Designation / Name</label>
+                  <div className="relative group">
+                    <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-neon transition-colors" size={16} />
+                    <input 
+                      type="text" 
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-black border border-zinc-800 rounded-sm focus:border-neon focus:ring-1 focus:ring-neon outline-none transition-all text-white font-mono text-sm placeholder-zinc-800" 
+                      placeholder="ENTER_NAME" 
+                      required={isRegister}
+                    />
+                  </div>
                 </div>
-              </div>
+                 <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 mb-1 font-mono uppercase tracking-wider">Avatar URL (Optional)</label>
+                  <div className="relative group">
+                    <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-neon transition-colors" size={16} />
+                    <input 
+                      type="text" 
+                      value={avatar}
+                      onChange={(e) => setAvatar(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-black border border-zinc-800 rounded-sm focus:border-neon focus:ring-1 focus:ring-neon outline-none transition-all text-white font-mono text-sm placeholder-zinc-800" 
+                      placeholder="HTTPS://..." 
+                    />
+                  </div>
+                </div>
+              </>
             )}
             <div>
               <label className="block text-[10px] font-bold text-zinc-500 mb-1 font-mono uppercase tracking-wider">Comms_ID / Email</label>

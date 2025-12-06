@@ -1,4 +1,5 @@
 
+
 export enum Category {
   Coding = 'Coding',
   Writing = 'Writing',
@@ -20,6 +21,7 @@ export interface Template {
   tags: string[];
   author: string;
   authorId: string; // ID of the user who created it
+  authorAvatar?: string; // Avatar URL of the user
   likes: number;
   uses: number;
   createdAt: string;
@@ -70,4 +72,13 @@ export interface FeaturedJob {
   applyLink?: string; // Optional external link
 }
 
-export type AppView = 'market' | 'admin' | 'user' | 'auth' | 'detail-mcp' | 'detail-job' | 'all-mcps' | 'all-jobs';
+export interface ExampleApp {
+  id: string;
+  name: string;
+  description: string;
+  githubUrl: string;
+  demoUrl?: string;
+  imageUrl?: string;
+}
+
+export type AppView = 'market' | 'admin' | 'user' | 'auth' | 'detail-mcp' | 'detail-job' | 'all-mcps' | 'all-jobs' | 'contact' | 'example-apps' | 'user-profile';

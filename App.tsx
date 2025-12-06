@@ -1,6 +1,8 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { TemplateCard } from './components/TemplateCard';
 import { TemplateModal } from './components/TemplateModal';
 import { CreateTemplateModal } from './components/CreateTemplateModal';
@@ -11,14 +13,17 @@ import { FeaturedSection } from './components/FeaturedSection';
 import { DetailPage } from './components/DetailPage';
 import { AllMCPsPage } from './components/AllMCPsPage';
 import { AllJobsPage } from './components/AllJobsPage';
-import { Template, Category, User, UserRole, AppView, FeaturedMCP, FeaturedJob } from './types';
+import { ContactPage } from './components/ContactPage';
+import { ExampleAppsPage } from './components/ExampleAppsPage';
+import { UserProfilePage } from './components/UserProfilePage';
+import { Template, Category, User, UserRole, AppView, FeaturedMCP, FeaturedJob, ExampleApp } from './types';
 import { Filter, LayoutGrid, ImageIcon } from 'lucide-react';
 
 // Mock Data
 const MOCK_USERS: User[] = [
   { id: 'u1', name: 'John Doe', role: 'user', email: 'john@example.com' },
   { id: 'u2', name: 'Admin Alice', role: 'admin', email: 'admin@prompt101.com' },
-  { id: 'u3', name: 'Sarah Smith', role: 'user', email: 'sarah@design.co' }
+  { id: 'u3', name: 'Sarah Smith', role: 'user', email: 'sarah@design.co', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop' }
 ];
 
 const INITIAL_MCPS: FeaturedMCP[] = [
@@ -36,6 +41,23 @@ const INITIAL_JOBS: FeaturedJob[] = [
   { id: 'job4', title: 'AI Software Baker', company: 'Mixedbread', location: 'Remote', type: 'Remote', description: 'Mixedbread (6-person seed team) bakes next-gen search; our OSS...', content: 'Full job description for AI Software Baker at Mixedbread...', logo: 'Mixedbread' },
 ];
 
+const INITIAL_APPS: ExampleApp[] = [
+  { 
+    id: 'app1', 
+    name: 'Neon Blog', 
+    description: 'A Next.js blog with cyberpunk styling.', 
+    githubUrl: 'https://github.com/example/neon-blog', 
+    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop' 
+  },
+  { 
+    id: 'app2', 
+    name: 'AI Chatbot', 
+    description: 'Simple chatbot implementation using Gemini API.', 
+    githubUrl: 'https://github.com/example/ai-chat', 
+    demoUrl: 'https://example.com' 
+  }
+];
+
 const INITIAL_TEMPLATES: Template[] = [
   {
     id: '1',
@@ -44,7 +66,7 @@ const INITIAL_TEMPLATES: Template[] = [
     content: `Act as a world-class senior frontend React engineer. Your goal is to provide clean, efficient, and well-documented TypeScript code. Always prefer functional components and hooks. When debugging, explain the root cause before providing the fix.`,
     category: Category.Coding,
     tags: ['react', 'typescript', 'frontend', 'web-dev'],
-    author: 'DevMaster',
+    author: 'John Doe',
     authorId: 'u1',
     likes: 342,
     uses: 1205,
@@ -59,7 +81,7 @@ const INITIAL_TEMPLATES: Template[] = [
     content: `You are a LinkedIn growth expert. I will provide a topic or a link. You will generate a post that uses short sentences, engaging hooks, and a call to action at the end. Use a professional but conversational tone.`,
     category: Category.Marketing,
     tags: ['social-media', 'linkedin', 'growth', 'copywriting'],
-    author: 'GrowthGuru',
+    author: 'Admin Alice',
     authorId: 'u2',
     likes: 891,
     uses: 5600,
@@ -74,7 +96,7 @@ const INITIAL_TEMPLATES: Template[] = [
     content: `Write a 5-email onboarding sequence for a new SaaS product. \nEmail 1: Welcome & Value Prop\nEmail 2: First Quick Win\nEmail 3: Case Study\nEmail 4: Advanced Features\nEmail 5: Upgrade Call to Action.`,
     category: Category.Marketing,
     tags: ['email', 'saas', 'copywriting', 'onboarding'],
-    author: 'SaaSWizard',
+    author: 'John Doe',
     authorId: 'u1',
     likes: 210,
     uses: 850,
@@ -89,7 +111,7 @@ const INITIAL_TEMPLATES: Template[] = [
     content: `A futuristic city street at night, heavy rain, neon lights reflecting on wet pavement, towering skyscrapers with holographic ads, cyberpunk aesthetic, 8k resolution, cinematic lighting, photorealistic.`,
     category: Category.Design,
     tags: ['cyberpunk', 'city', 'neon', 'midjourney'],
-    author: 'ArtBot',
+    author: 'Admin Alice',
     authorId: 'u2',
     likes: 450,
     uses: 120,
@@ -105,7 +127,7 @@ const INITIAL_TEMPLATES: Template[] = [
     content: `Portrait of an astronaut in a vintage space suit, surrounded by floating colorful flowers, retro film grain style, muted colors, dreamlike atmosphere, detailed helmet reflection.`,
     category: Category.Design,
     tags: ['vintage', 'astronaut', 'surreal', 'art'],
-    author: 'CosmicTraveler',
+    author: 'John Doe',
     authorId: 'u1',
     likes: 320,
     uses: 88,
@@ -138,10 +160,12 @@ function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [mcps, setMcps] = useState<FeaturedMCP[]>(INITIAL_MCPS);
   const [jobs, setJobs] = useState<FeaturedJob[]>(INITIAL_JOBS);
+  const [exampleApps, setExampleApps] = useState<ExampleApp[]>(INITIAL_APPS);
   const [googleAnalyticsId, setGoogleAnalyticsId] = useState('');
   
   // Navigation State
   const [currentView, setCurrentView] = useState<AppView>('market');
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   
   // UI State
   const [searchQuery, setSearchQuery] = useState('');
@@ -193,13 +217,13 @@ function App() {
     }
   };
 
-  const handleRegister = (name: string, email: string) => {
+  const handleRegister = (name: string, email: string, avatar?: string) => {
     const newUser: User = {
       id: `u${Date.now()}`,
       name,
       email,
       role: 'user',
-      avatar: ''
+      avatar: avatar
     };
     setUsers(prev => [...prev, newUser]);
     setCurrentUser(newUser);
@@ -213,6 +237,20 @@ function App() {
 
   const handleLoginClick = () => {
     setCurrentView('auth');
+  };
+
+  const handleUpdateUser = (updatedUser: User) => {
+    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+    if (currentUser?.id === updatedUser.id) {
+        setCurrentUser(updatedUser);
+    }
+    
+    // Update author name and avatar in all templates belonging to this user
+    setTemplates(prev => prev.map(t => 
+      t.authorId === updatedUser.id 
+        ? { ...t, author: updatedUser.name, authorAvatar: updatedUser.avatar }
+        : t
+    ));
   };
 
   // --- Data Logic ---
@@ -240,6 +278,11 @@ function App() {
   const handleTemplateClick = (template: Template) => {
     setSelectedTemplate(template);
     setIsModalOpen(true);
+  };
+
+  const handleAuthorClick = (userId: string) => {
+    setViewingUserId(userId);
+    setCurrentView('user-profile');
   };
 
   const handleCloseModal = () => {
@@ -309,6 +352,18 @@ function App() {
     setJobs(prev => prev.filter(j => j.id !== id));
   };
 
+  const handleAdminAddApp = (app: ExampleApp) => {
+    setExampleApps(prev => [...prev, app]);
+  };
+
+  const handleAdminUpdateApp = (updatedApp: ExampleApp) => {
+    setExampleApps(prev => prev.map(a => a.id === updatedApp.id ? updatedApp : a));
+  };
+
+  const handleAdminDeleteApp = (id: string) => {
+    setExampleApps(prev => prev.filter(a => a.id !== id));
+  };
+
 
   // --- Render Views ---
 
@@ -364,6 +419,26 @@ function App() {
       );
     }
 
+    if (currentView === 'contact') {
+      return <ContactPage onBack={() => setCurrentView('market')} />;
+    }
+
+    if (currentView === 'example-apps') {
+      return <ExampleAppsPage apps={exampleApps} onBack={() => setCurrentView('market')} />;
+    }
+
+    if (currentView === 'user-profile' && viewingUserId) {
+        return (
+            <UserProfilePage 
+                userId={viewingUserId}
+                users={users}
+                templates={templates}
+                onBack={() => setCurrentView('market')}
+                onTemplateClick={handleTemplateClick}
+            />
+        )
+    }
+
     if (currentView === 'admin' && currentUser?.role === 'admin') {
       return (
         <AdminDashboard 
@@ -371,6 +446,7 @@ function App() {
           users={users}
           mcps={mcps}
           jobs={jobs}
+          exampleApps={exampleApps}
           googleAnalyticsId={googleAnalyticsId}
           onUpdateGAId={setGoogleAnalyticsId}
           onApprove={handleApproveTemplate}
@@ -382,6 +458,9 @@ function App() {
           onAddJob={handleAdminAddJob}
           onUpdateJob={handleAdminUpdateJob}
           onDeleteJob={handleAdminDeleteJob}
+          onAddApp={handleAdminAddApp}
+          onUpdateApp={handleAdminUpdateApp}
+          onDeleteApp={handleAdminDeleteApp}
         />
       );
     }
@@ -390,8 +469,10 @@ function App() {
       return (
         <UserDashboard 
           templates={userTemplates}
+          currentUser={currentUser}
           onTemplateClick={handleTemplateClick}
           onOpenCreate={handleOpenCreate}
+          onUpdateUser={handleUpdateUser}
         />
       );
     }
@@ -469,6 +550,7 @@ function App() {
                   key={template.id} 
                   template={template} 
                   onClick={handleTemplateClick} 
+                  onAuthorClick={handleAuthorClick}
                 />
               ))}
             </div>
@@ -488,6 +570,7 @@ function App() {
                   key={template.id} 
                   template={template} 
                   onClick={handleTemplateClick} 
+                  onAuthorClick={handleAuthorClick}
                 />
               ))
             ) : (
@@ -506,7 +589,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black bg-grid-pattern relative overflow-x-hidden">
+    <div className="min-h-screen bg-black bg-grid-pattern relative overflow-x-hidden flex flex-col">
       <Header 
         searchQuery={searchQuery} 
         setSearchQuery={setSearchQuery}
@@ -518,9 +601,11 @@ function App() {
         onChangeView={setCurrentView}
       />
 
-      <main className="container mx-auto px-4 py-8 pb-20">
+      <main className="container mx-auto px-4 py-8 pb-20 flex-1">
         {renderContent()}
       </main>
+
+      <Footer onChangeView={setCurrentView} />
 
       <TemplateModal 
         template={selectedTemplate} 

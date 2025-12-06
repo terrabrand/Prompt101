@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Template } from '../types';
 import { X, Copy, Check, Share2, Bookmark, ImageIcon } from 'lucide-react';
@@ -132,8 +133,12 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ template, isOpen, 
         {/* Modal Footer */}
         <div className="p-6 border-t border-zinc-800 bg-zinc-900/30 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded bg-zinc-900 border border-zinc-700 flex items-center justify-center text-neon font-bold font-mono">
-               {template.author.charAt(0)}
+            <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-neon font-bold font-mono overflow-hidden">
+               {template.authorAvatar ? (
+                  <img src={template.authorAvatar} alt={template.author} className="w-full h-full object-cover" />
+               ) : (
+                  template.author.charAt(0)
+               )}
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-bold text-white font-mono uppercase">{template.author}</span>

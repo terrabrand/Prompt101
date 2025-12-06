@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Template } from '../types';
 import { Heart, Clock, CheckCircle, XCircle, Copy, Check, Terminal, ImageIcon } from 'lucide-react';
@@ -7,9 +8,10 @@ interface TemplateCardProps {
   template: Template;
   onClick: (template: Template) => void;
   showStatus?: boolean;
+  onAuthorClick?: (userId: string) => void;
 }
 
-export const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick, showStatus = false }) => {
+export const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick, showStatus = false, onAuthorClick }) => {
   const [copied, setCopied] = useState(false);
   const isImagePrompt = template.type === 'image' && template.imageUrl;
 
@@ -18,6 +20,13 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick, s
     navigator.clipboard.writeText(template.content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleAuthorClick = (e: React.MouseEvent) => {
+    if (onAuthorClick) {
+      e.stopPropagation();
+      onAuthorClick(template.authorId);
+    }
   };
 
   const getStatusBadge = () => {
@@ -104,14 +113,21 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick, s
               )}
 
               <div className="mt-auto pt-4 border-t border-zinc-800 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
-                  <div className={`w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border border-zinc-700 ${
+                <button 
+                  onClick={handleAuthorClick}
+                  className={`flex items-center gap-2 text-xs text-zinc-500 font-mono transition-colors ${onAuthorClick ? 'hover:text-neon hover:underline' : ''}`}
+                >
+                  <div className={`w-5 h-5 rounded-full overflow-hidden flex items-center justify-center text-[10px] font-bold border border-zinc-700 ${
                     template.author === 'You' ? 'bg-neon text-black border-neon' : 'bg-black text-zinc-400'
                   }`}>
-                    {template.author.charAt(0)}
+                    {template.authorAvatar ? (
+                      <img src={template.authorAvatar} alt={template.author} className="w-full h-full object-cover" />
+                    ) : (
+                      template.author.charAt(0)
+                    )}
                   </div>
                   <span className="uppercase">{template.author}</span>
-                </div>
+                </button>
                 
                 <div className="flex items-center gap-3">
                   <div className="flex gap-1">

@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { Template, User, FeaturedMCP, FeaturedJob } from '../types';
-import { Check, X, Trash2, LayoutDashboard, Users, AlertCircle, Activity, Briefcase, Box, Plus, Save, Edit2, RotateCcw, BarChart3, Globe, Zap } from 'lucide-react';
+import { Template, User, FeaturedMCP, FeaturedJob, ExampleApp } from '../types';
+import { Check, X, Trash2, LayoutDashboard, Users, AlertCircle, Activity, Briefcase, Box, Plus, Save, Edit2, RotateCcw, BarChart3, Globe, Zap, Code } from 'lucide-react';
 
 interface AdminDashboardProps {
   templates: Template[];
   users: User[];
   mcps?: FeaturedMCP[];
   jobs?: FeaturedJob[];
+  exampleApps?: ExampleApp[];
   googleAnalyticsId: string;
   onUpdateGAId: (id: string) => void;
   onApprove: (id: string) => void;
@@ -19,15 +20,19 @@ interface AdminDashboardProps {
   onAddJob?: (job: FeaturedJob) => void;
   onUpdateJob?: (job: FeaturedJob) => void;
   onDeleteJob?: (id: string) => void;
+  onAddApp?: (app: ExampleApp) => void;
+  onUpdateApp?: (app: ExampleApp) => void;
+  onDeleteApp?: (id: string) => void;
 }
 
-type AdminTab = 'overview' | 'users' | 'mcps' | 'jobs' | 'analytics';
+type AdminTab = 'overview' | 'users' | 'mcps' | 'jobs' | 'apps' | 'analytics';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
   templates, 
   users, 
   mcps = [],
   jobs = [],
+  exampleApps = [],
   googleAnalyticsId,
   onUpdateGAId,
   onApprove, 
@@ -38,7 +43,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onDeleteMCP,
   onAddJob,
   onUpdateJob,
-  onDeleteJob
+  onDeleteJob,
+  onAddApp,
+  onUpdateApp,
+  onDeleteApp
 }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [rejectingId, setRejectingId] = useState<string | null>(null);
@@ -50,6 +58,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const [newJob, setNewJob] = useState({ id: '', title: '', company: '', location: '', type: 'Remote', description: '', content: '', salary: '', applyLink: '' });
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
+
+  const [newApp, setNewApp] = useState({ id: '', name: '', description: '', githubUrl: '', demoUrl: '', imageUrl: '' });
+  const [editingAppId, setEditingAppId] = useState<string | null>(null);
 
   const [gaIdInput, setGaIdInput] = useState(googleAnalyticsId);
 
@@ -164,6 +175,50 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setNewJob({ id: '', title: '', company: '', location: '', type: 'Remote', description: '', content: '', salary: '', applyLink: '' });
   };
 
+  // --- App Handlers ---
+  const handleCreateOrUpdateApp = () => {
+    if (!newApp.name || !newApp.description) return;
+
+    if (editingAppId && onUpdateApp) {
+      onUpdateApp({
+        id: editingAppId,
+        name: newApp.name,
+        description: newApp.description,
+        githubUrl: newApp.githubUrl,
+        demoUrl: newApp.demoUrl,
+        imageUrl: newApp.imageUrl
+      });
+      setEditingAppId(null);
+    } else if (onAddApp) {
+      onAddApp({
+        id: `app-${Date.now()}`,
+        name: newApp.name,
+        description: newApp.description,
+        githubUrl: newApp.githubUrl,
+        demoUrl: newApp.demoUrl,
+        imageUrl: newApp.imageUrl
+      });
+    }
+    setNewApp({ id: '', name: '', description: '', githubUrl: '', demoUrl: '', imageUrl: '' });
+  };
+
+  const handleEditApp = (app: ExampleApp) => {
+    setNewApp({
+      id: app.id,
+      name: app.name,
+      description: app.description,
+      githubUrl: app.githubUrl,
+      demoUrl: app.demoUrl || '',
+      imageUrl: app.imageUrl || ''
+    });
+    setEditingAppId(app.id);
+  };
+
+  const handleCancelEditApp = () => {
+    setEditingAppId(null);
+    setNewApp({ id: '', name: '', description: '', githubUrl: '', demoUrl: '', imageUrl: '' });
+  };
+
   const SidebarItem = ({ id, icon: Icon, label }: { id: AdminTab, icon: any, label: string }) => (
     <button 
       onClick={() => setActiveTab(id)}
@@ -197,6 +252,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="my-2 border-t border-zinc-800"></div>
             <SidebarItem id="mcps" icon={Box} label="Manage_MCPs" />
             <SidebarItem id="jobs" icon={Briefcase} label="Manage_Jobs" />
+            <SidebarItem id="apps" icon={Code} label="Example_Apps" />
           </div>
 
           <div className="p-4 mt-2">
@@ -613,6 +669,91 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <div className="flex gap-2">
                          <button onClick={() => handleEditJob(job)} className="text-zinc-600 hover:text-neon p-2"><Edit2 size={16}/></button>
                          <button onClick={() => onDeleteJob && onDeleteJob(job.id)} className="text-zinc-600 hover:text-red-500 p-2"><Trash2 size={16}/></button>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+           </div>
+        )}
+
+        {/* APPS TAB */}
+        {activeTab === 'apps' && (
+           <div className="space-y-8">
+              <div className="border-b border-zinc-800 pb-4">
+                <h1 className="text-2xl font-tech font-bold text-white uppercase tracking-wide">Manage_Example_Apps</h1>
+              </div>
+
+              {/* Add/Edit Form */}
+              <div className={`bg-zinc-900/30 border ${editingAppId ? 'border-neon/50 bg-neon/5' : 'border-zinc-800'} p-6 rounded-sm transition-colors`}>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className={`text-sm font-bold ${editingAppId ? 'text-neon' : 'text-white'} font-mono uppercase tracking-wider`}>
+                    {editingAppId ? 'Editing Application' : 'Add New Application'}
+                  </h3>
+                   {editingAppId && (
+                     <button onClick={handleCancelEditApp} className="text-[10px] text-zinc-500 hover:text-white uppercase font-mono flex items-center gap-1">
+                        <RotateCcw size={10}/> Cancel Edit
+                     </button>
+                  )}
+                </div>
+                <div className="grid gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <input 
+                      placeholder="App Name" 
+                      className="w-full bg-black border border-zinc-800 p-3 text-sm font-mono text-white focus:border-neon outline-none"
+                      value={newApp.name}
+                      onChange={(e) => setNewApp({...newApp, name: e.target.value})}
+                    />
+                     <input 
+                      placeholder="GitHub URL" 
+                      className="w-full bg-black border border-zinc-800 p-3 text-sm font-mono text-white focus:border-neon outline-none"
+                      value={newApp.githubUrl}
+                      onChange={(e) => setNewApp({...newApp, githubUrl: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <input 
+                      placeholder="Live Demo URL [Optional]" 
+                      className="w-full bg-black border border-zinc-800 p-3 text-sm font-mono text-white focus:border-neon outline-none"
+                      value={newApp.demoUrl}
+                      onChange={(e) => setNewApp({...newApp, demoUrl: e.target.value})}
+                    />
+                     <input 
+                      placeholder="Preview Image URL [Optional]" 
+                      className="w-full bg-black border border-zinc-800 p-3 text-sm font-mono text-white focus:border-neon outline-none"
+                      value={newApp.imageUrl}
+                      onChange={(e) => setNewApp({...newApp, imageUrl: e.target.value})}
+                    />
+                  </div>
+                  
+                  <textarea 
+                    placeholder="Short Description" 
+                    className="w-full bg-black border border-zinc-800 p-3 text-sm font-mono text-white focus:border-neon outline-none h-20"
+                    value={newApp.description}
+                    onChange={(e) => setNewApp({...newApp, description: e.target.value})}
+                  />
+
+                  <button onClick={handleCreateOrUpdateApp} className="bg-neon text-black font-bold font-mono text-xs uppercase py-3 rounded-sm hover:bg-white transition-colors flex items-center justify-center gap-2">
+                     {editingAppId ? <Save size={14}/> : <Plus size={14}/>} {editingAppId ? 'Save_Changes' : 'Create_Entry'}
+                  </button>
+                </div>
+              </div>
+
+               {/* List */}
+               <div className="grid gap-4">
+                 {exampleApps.map(app => (
+                   <div key={app.id} className="bg-zinc-950 border border-zinc-800 p-4 flex justify-between items-center">
+                      <div className="flex items-center gap-4">
+                         <div className="w-10 h-10 bg-zinc-900 border border-zinc-800 rounded flex items-center justify-center text-white">
+                            <Code size={18} />
+                         </div>
+                         <div>
+                            <h4 className="text-white font-bold font-mono">{app.name}</h4>
+                            <p className="text-xs text-zinc-500 font-mono">{app.description}</p>
+                         </div>
+                      </div>
+                      <div className="flex gap-2">
+                         <button onClick={() => handleEditApp(app)} className="text-zinc-600 hover:text-neon p-2"><Edit2 size={16}/></button>
+                         <button onClick={() => onDeleteApp && onDeleteApp(app.id)} className="text-zinc-600 hover:text-red-500 p-2"><Trash2 size={16}/></button>
                       </div>
                    </div>
                  ))}

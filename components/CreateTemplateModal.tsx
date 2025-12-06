@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { X, Send, AlertCircle, FileText, Tag, List, Type, Terminal, Image as ImageIcon, Code } from 'lucide-react';
 import { Template, Category, User, TemplateType } from '../types';
@@ -48,6 +49,7 @@ export const CreateTemplateModal: React.FC<CreateTemplateModalProps> = ({ isOpen
       tags: tagList.length > 0 ? tagList : ['prompt'],
       author: currentUser.name,
       authorId: currentUser.id,
+      authorAvatar: currentUser.avatar,
       likes: 0,
       uses: 0,
       createdAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
